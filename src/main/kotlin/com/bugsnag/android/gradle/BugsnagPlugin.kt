@@ -73,30 +73,28 @@ class BugsnagPlugin : Plugin<Project> {
             project.objects
         )
         project.pluginManager.withPlugin("com.android.application") {
-            if (!bugsnag.enabled.get()) {
-                return@withPlugin
-            }
-            addReactNativeMavenRepo(project, bugsnag)
-
-            val httpClientHelperProvider = BugsnagHttpClientHelper.create(
-                project,
-                bugsnag
-            )
-
-            val releasesUploadClientProvider = newUploadRequestClientProvider(project, "releases")
-            val proguardUploadClientProvider = newUploadRequestClientProvider(project, "proguard")
-            val ndkUploadClientProvider = newUploadRequestClientProvider(project, "ndk")
-            val unityUploadClientProvider = newUploadRequestClientProvider(project, "unity")
-
-            val android = project.extensions.getByType(AppExtension::class.java)
-            if (BugsnagManifestUuidTaskV2.isApplicable()) {
-                registerV2ManifestUuidTask(android, bugsnag, project)
-            }
-
             project.afterEvaluate {
                 if (!bugsnag.enabled.get()) {
                     return@afterEvaluate
                 }
+
+                addReactNativeMavenRepo(project, bugsnag)
+
+                val httpClientHelperProvider = BugsnagHttpClientHelper.create(
+                    project,
+                    bugsnag
+                )
+
+                val releasesUploadClientProvider = newUploadRequestClientProvider(project, "releases")
+                val proguardUploadClientProvider = newUploadRequestClientProvider(project, "proguard")
+                val ndkUploadClientProvider = newUploadRequestClientProvider(project, "ndk")
+                val unityUploadClientProvider = newUploadRequestClientProvider(project, "unity")
+
+                val android = project.extensions.getByType(AppExtension::class.java)
+                if (BugsnagManifestUuidTaskV2.isApplicable()) {
+                    registerV2ManifestUuidTask(android, bugsnag, project)
+                }
+
                 android.applicationVariants.configureEach { variant ->
                     val filterImpl = VariantFilterImpl(variant.name)
                     if (!isVariantEnabled(bugsnag, filterImpl)) {
